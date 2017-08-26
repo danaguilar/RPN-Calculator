@@ -4,12 +4,23 @@ require_relative 'calculator'
 #Using https://www.anchor.com.au/wp-content/uploads/rspec_cheatsheet_attributed.pdf
 
 
-describe Calculator  do 
-	before do
-		@calculator = Calculator.new
-	end
+describe Calculator  do
 	describe 'operands' do
-		before do
+		before(:each)do
+			@calculator = Calculator.new
+		end
+		it 'accepts and returns a number' do
+			expect(@calculator.parse_input('3')).to eq(3)
+		end
+
+		context 'when multiple numbers are given' do
+			it 'returns the last one' do
+				expect(@calculator.parse_input('3 4')).to eq(4)
+			end
+		end
+
+	describe 'operators' do
+		before(:all) do
 			@test_inline_addition = [
 				["2 5 +",7]
 			]
@@ -23,17 +34,11 @@ describe Calculator  do
 				["10 2 /",5]
 			]
 		end
-		it 'accepts and returns a number' do
-			expect(@calculator.calculate(3)).to eq(3)
-		end
-
-		it 'accepts multiple numbers and returns the last one'
-	describe 'operators' do
 		describe 'addition' do
-			
+
 		end
 
 	end
-		
+
 	end
 end
