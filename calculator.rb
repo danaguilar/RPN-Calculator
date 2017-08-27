@@ -1,6 +1,6 @@
 class Calculator
 	# Creates a caculator instance with a stack to track operand
-
+	attr_reader :error
 	class Operation
 		attr_reader :name, :character, :argument_size, :function
 		def initialize(name,character, argument_size, function)
@@ -10,6 +10,7 @@ class Calculator
 			@function = function
 		end
 	end
+
 	def initialize
 		@stack = []
 		@operations = [
@@ -21,7 +22,8 @@ class Calculator
 				return nums[0] / nums[1]
 				})
 		]
-		@error = nil
+		@error = ''
+		@saved_stack = []
 	end
 
 	# Adds a number to the stack
@@ -41,24 +43,28 @@ class Calculator
 		else
 			raise ArgumentError, "Argument Error: #{operation.name} requires #{operation.argument_size} operands. Only #{@stack.length} given."
 		end
-		add_to_stack(answer.to_r)
+		add_to_stack(answer.to_f)
 	end
 
 	# Parses a raw string input into an array of inputs and processes each one individually
 	def parse_input(str)
 		input_array = str.split(' ')
+		# Save current stack so that it can be reverted in case of an error
+		@saved_stack = @stack.dup
 		begin
 			input_array.each do |item|
 				operation_index = @operations.find_index{ |operation| item == operation.character}
 				unless operation_index.nil?
 					calculate(@operations[operation_index])
 				else
-					add_to_stack(item.to_r)
+					add_to_stack(item.to_f)
 				end
 			end
 			return true
 		rescue ArgumentError, ZeroDivisionError => e
 			@error = e.message
+			# revert the stack to what it was before the error was found
+			@stack = @saved_stack
 			return false
 		end
 	end
