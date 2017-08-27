@@ -2,8 +2,9 @@ class Calculator
 	# Creates a caculator instance with a stack to track operand
 
 	class Operation
-		attr_reader :character, :argument_size, :function
-		def initialize(character, argument_size, function)
+		attr_reader :name, :character, :argument_size, :function
+		def initialize(name,character, argument_size, function)
+			@name = name
 			@character = character
 			@argument_size = argument_size
 			@function = function
@@ -12,9 +13,15 @@ class Calculator
 	def initialize
 		@stack = []
 		@operations = [
-			Operation.new('+',2, lambda { |nums| return nums[0] + nums[1]})
+			Operation.new('Addition','+',2, lambda { |nums| return nums[0] + nums[1]}),
+			Operation.new('Substraction','-',2, lambda { |nums| return nums[0] - nums[1]}),
+			Operation.new('Multiplication', '*',2, lambda { |nums| return nums[0] * nums[1]}),
+			Operation.new('Division','/',2, lambda { |nums|
+				raise ZeroDivisionError, "Zero Division Error: Cannot divide #{nums[0]} by #{nums[1]}" if nums[1] == 0
+				return nums[0] / nums[1]
+				})
 		]
-
+		@error = nil
 	end
 
 	# Adds a number to the stack
@@ -23,7 +30,7 @@ class Calculator
 	end
 
 	# Returns, but does not remove, the next number in the stack
-	def last_number
+	def latest_result
 		return @stack[-1]
 	end
 
@@ -31,6 +38,8 @@ class Calculator
 	def calculate(operation)
 		if @stack.length >= operation.argument_size
 			answer =  operation.function.call(@stack.pop(operation.argument_size))
+		else
+			raise ArgumentError, "Argument Error: #{operation.name} requires #{operation.argument_size} operands. Only #{@stack.length} given."
 		end
 		add_to_stack(answer.to_r)
 	end
@@ -38,14 +47,19 @@ class Calculator
 	# Parses a raw string input into an array of inputs and processes each one individually
 	def parse_input(str)
 		input_array = str.split(' ')
-		input_array.each do |item|
-			operation_index = @operations.find_index{ |operation| item == operation.character}
-			unless operation_index.nil?
-				calculate(@operations[operation_index])
-			else
-				add_to_stack(item.to_r)
+		begin
+			input_array.each do |item|
+				operation_index = @operations.find_index{ |operation| item == operation.character}
+				unless operation_index.nil?
+					calculate(@operations[operation_index])
+				else
+					add_to_stack(item.to_r)
+				end
 			end
+			return true
+		rescue ArgumentError, ZeroDivisionError => e
+			@error = e.message
+			return false
 		end
-		return last_number
 	end
 end

@@ -11,12 +11,14 @@ describe Calculator  do
 
 	describe 'operands' do
 		it 'accepts and returns a number' do
-			expect(@calculator.parse_input('3')).to eq(3)
+			@calculator.parse_input('3')
+			expect(@calculator.latest_result).to eq(3)
 		end
 
 		context 'when multiple numbers are given' do
 			it 'returns the last one' do
-				expect(@calculator.parse_input('3 4')).to eq(4)
+				@calculator.parse_input('3 4')
+				expect(@calculator.latest_result).to eq(4)
 			end
 		end
 	end
@@ -40,15 +42,36 @@ describe Calculator  do
 		end
 
 		context 'When the "+" character is encountered' do
-			it "throws an error if there are not two operands available"
-			it " it adds two operands together correctly" do
-				@test_inline_addition.each do |test_case|
-					expect(@calculator.parse_input(test_case[0])).to eq(test_case[1])
-				end
+			it "throws an error if there are not two operands available" do
+				expect(@calculator.parse_input("2 +")).to be false
 			end
+			it " it adds two operands together correctly" do
+				@calculator.parse_input("2 5 +")
+				expect(@calculator.latest_result).to eq(7)
+			end
+		end
 
-			it "saves the stack when an error occurs"
-	end
+		context 'When the "-" character is encountered' do
+			it " it subtracts two operands together correctly" do
+				@calculator.parse_input("5 2 -")
+				expect(@calculator.latest_result).to eq(3)
+			end
+		end
 
+		context 'When the "*" character is encountered' do
+			it " it subtracts two operands together correctly" do
+				@calculator.parse_input("5 2 *")
+				expect(@calculator.latest_result).to eq(10)
+			end
+		end
+
+		context 'When the "/" character is encountered' do
+			it " it subtracts two operands together correctly" do
+				@calculator.parse_input("10 2 /")
+				expect(@calculator.latest_result).to eq(5)
+			end
+		end
+
+		it "saves the stack when an error occurs"
 	end
 end
