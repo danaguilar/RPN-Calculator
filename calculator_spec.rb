@@ -5,10 +5,11 @@ require_relative 'calculator'
 
 
 describe Calculator  do
+	before(:each)do
+		@calculator = Calculator.new
+	end
+
 	describe 'operands' do
-		before(:each)do
-			@calculator = Calculator.new
-		end
 		it 'accepts and returns a number' do
 			expect(@calculator.parse_input('3')).to eq(3)
 		end
@@ -18,8 +19,11 @@ describe Calculator  do
 				expect(@calculator.parse_input('3 4')).to eq(4)
 			end
 		end
+	end
 
 	describe 'operators' do
+		# Test cases for checking operations. Can be extended by following the given syntax
+		# ["num, num, operator",answer]
 		before(:all) do
 			@test_inline_addition = [
 				["2 5 +",7]
@@ -34,10 +38,16 @@ describe Calculator  do
 				["10 2 /",5]
 			]
 		end
-		describe 'addition' do
 
-		end
+		context 'When the "+" character is encountered' do
+			it "throws an error if there are not two operands available"
+			it " it adds two operands together correctly" do
+				@test_inline_addition.each do |test_case|
+					expect(@calculator.parse_input(test_case[0])).to eq(test_case[1])
+				end
+			end
 
+			it "saves the stack when an error occurs"
 	end
 
 	end
