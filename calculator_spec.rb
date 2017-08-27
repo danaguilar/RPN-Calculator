@@ -5,87 +5,111 @@ require_relative 'calculator'
 
 
 describe Calculator  do
+
 	before(:each)do
 		@calculator = Calculator.new
 	end
 
-	describe 'operands' do
-		it 'accepts and returns a number' do
-			@calculator.parse_input('3')
-			expect(@calculator.latest_result).to eq(3)
+	describe 'Input' do
+		context 'When given a number...' do
+			it 'accept a single number' do
+				expect(@calculator.compute('3')[0]).to be true
+			end
+			it 'accept multiple numbers' do
+				expect(@calculator.compute('3 4.23 5 78 168')[0]).to be true
+			end
 		end
-
-		it 'accepts and returns a rational number' do
-			@calculator.parse_input('3.54')
-			expect(@calculator.latest_result).to eq(3.54)
-		end
-
-		context 'when multiple numbers are given' do
-			it 'returns the last one' do
-				@calculator.parse_input('3 4')
-				expect(@calculator.latest_result).to eq(4)
+		context 'When given a character...' do
+			context 'for characters that are valid operations...' do
+				context "and there are enough given operands" do
+					it 'accept addition(+)' do
+						expect(@calculator.compute('5 2 +')[0]).to be true
+					end
+					it 'accept subtraction(-)' do
+						expect(@calculator.compute('5 2 -')[0]).to be true
+					end
+					it 'accept multiplication(*)' do
+						expect(@calculator.compute('5 2 *')[0]).to be true
+					end
+					it 'accept division(/)' do
+						expect(@calculator.compute('5 2 /')[0]).to be true
+					end
+					it 'reject division over 0' do
+						expect(@calculator.compute('5 0 /')[0]).to be false
+					end
+				end
+				context "and there are not enough given operands..."do
+					it 'reject addition(+)' do
+						expect(@calculator.compute('2 +')[0]).to be false
+					end
+					it 'reject subtraction(-)' do
+						expect(@calculator.compute('-')[0]).to be false
+					end
+					it 'reject multiplication(*)' do
+						expect(@calculator.compute('5 *')[0]).to be false
+					end
+					it 'reject division(/)' do
+						expect(@calculator.compute('5 /')[0]).to be false
+					end
+				end
+			end
+		context 'for characters that are not valid operations...' do
+				it 'reject non valid operations' do
+					expect(@calculator.compute('2 5 4 %')[0]).to be false
+				end
 			end
 		end
 	end
 
-	describe 'operators' do
-		# Test cases for checking operations. Can be extended by following the given syntax
-		# ["num, num, operator",answer]
-		before(:all) do
-			@correct_test_cases = [
-				["2 5 +",7],
-				["5 2 -",3],
-				["5 2 *",10],
-				["10 2 /",5]
-			]
-
-			@incorrect_test_cases = [
-				["2 5 +",21],
-				["5 2 -",-3],
-				["5 2 *",4.23],
-				["10 2 /",4.2]
-			]
-		end
-
-		context 'When the "+" character is encountered' do
-			it "throws an error if there are not two operands available" do
-				expect(@calculator.parse_input("2 +")).to be false
+	describe 'Output' do
+		context 'When given a single line equation...' do
+			context 'if there is one operation...' do
+				it 'perform addition correctly' do
+					expect(@calculator.compute('5 2 +')[1]).to eq(7)
+				end
+				it 'perform subtraction correctly' do
+					expect(@calculator.compute('5 2 -')[1]).to eq(3)
+				end
+				it 'perform multiplication correctly' do
+					expect(@calculator.compute('5 2 *')[1]).to eq(10)
+				end
+				it 'perform division correctly' do
+					expect(@calculator.compute('10 2 /')[1]).to eq(5)
+				end
 			end
-			it " it adds two operands together correctly" do
-				@calculator.parse_input("2 5 +")
-				expect(@calculator.latest_result).to eq(7)
+			context 'For multiple operations...' do
+				it 'perform operations from left to right' do
+					expect(@calculator.compute('15 7 1 1 + - / 3 * 2 1 1 + + -')[1]).to eq(5)
+				end
 			end
 		end
-
-		context 'When the "-" character is encountered' do
-			it " it subtracts two operands  correctly" do
-				@calculator.parse_input("5 2 -")
-				expect(@calculator.latest_result).to eq(3)
+		context 'When given a multi line equation...' do
+			it 'save given numbers for future use' do
+				@calculator.compute('3')
+				@calculator.compute('4')
+				@calculator.compute('5')
+				expect(@calculator.get_stack).to eq('3.0 4.0 5.0')
+			end
+			it 'use saved numbers for operations' do
+				@calculator.compute('3')
+				@calculator.compute('4')
+				@calculator.compute('5')
+				expect(@calculator.compute('+')[1]).to eq(9)
+				expect(@calculator.compute('*')[1]).to eq(27)
+			end
+			context 'If an error occurs during a command...' do
+				it 'return error message' do
+					@calculator.compute('3')
+					@calculator.compute('4')
+					@calculator.compute('5')
+					expect(@calculator.compute('ERROR')[1]).to match /Error/
+				end
+				it 'revert state back to before command was given' do
+					@calculator.compute('3')
+					@calculator.compute('0 /')
+					expect(@calculator.get_stack).to eq('3.0')
+				end
 			end
 		end
-
-		context 'When the "*" character is encountered' do
-			it " it multiplies two operands together correctly" do
-				@calculator.parse_input("5 2 *")
-				expect(@calculator.latest_result).to eq(10)
-			end
-		end
-
-		context 'When the "/" character is encountered' do
-			it "an error is thrown when division by zero is attempted" do
-				expect(@calculator.parse_input("10 0 /")).to be false
-			end
-			it "it divides two operands correctly" do
-				@calculator.parse_input("10 2 /")
-				expect(@calculator.latest_result).to eq(5)
-			end
-		end
-
-		it "can compute this complicated thing" do
-			@calculator.parse_input('15 7 1 1 + − ÷ 3 × 2 1 1 + + −')
-			expect(@calculator.latest_result).to eq(5)
-		end
-
-		it "saves the stack when an error occurs"
 	end
 end
